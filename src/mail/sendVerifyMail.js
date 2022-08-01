@@ -1,8 +1,11 @@
-const transport = require("./createTransport");
+const { textColor, buttonBackgroundColor, buttonTextColor, buttonBorderColor } = require("../utils/colors"),
+  transport = require("./createTransport"),
+  template = require("./template"),
+  from = require('../utils/formEmail')
 
 module.exports = function sendVerifyMail(ctx) {
-  if (ctx.headers.authorization !== process.env.BIFROST_TOKEN) { 
-    return ctx.status(403).message('Non autorisé'); 
+  if (ctx.headers.authorization !== process.env.BIFROST_TOKEN) {
+    return ctx.status(403).message('Non autorisé');
   }
   const { url, host, email } = ctx.request.body;
   //no wait confirm for vercel limit timeout
@@ -10,25 +13,13 @@ module.exports = function sendVerifyMail(ctx) {
   function html({ url, email }) {
     const
       escapedEmail = `${email.replace(/\./g, "&#8203;.")}`,
-      backgroundColor = "#18191a",
-      textColor = "#adadad",
-      mainBackgroundColor = "#212422",
-      buttonBackgroundColor = "#378f6a",
-      buttonBorderColor = "#378f6a",
-      buttonTextColor = "white"
-
-    return `
-<body style="background: ${backgroundColor};margin:0;padding: 15px;">
-  <table width="100%" border="0" cellspacing="0" cellpadding="0">
-    <tr>
-      <td align="center" style="padding: 10px 0px 20px 0px; font-size: 22px; font-family: Helvetica, Arial, sans-serif; color: ${textColor};">
-        <strong>Njörd | ARRD</strong>
-      </td>
-    </tr>
-  </table>
-  <table width="100%" border="0" cellspacing="20" cellpadding="0" style="background: ${mainBackgroundColor}; max-width: 600px; margin: auto; border-radius: 10px;">
-    <tr>
-      <td align="center" style="padding: 10px 0px 0px 0px; font-size: 18px; font-family: Helvetica, Arial, sans-serif; color: ${textColor};">
+      body = `<tr>
+      <td 
+        align="center" 
+        style="padding: 10px 0px 0px 0px; 
+        font-size: 18px; 
+        font-family: Helvetica, Arial, sans-serif; 
+        color: ${textColor};">
         <strong>${escapedEmail}</strong>
       </td>
     </tr>
@@ -70,12 +61,10 @@ module.exports = function sendVerifyMail(ctx) {
           font-family: Helvetica, Arial, sans-serif;
           color: ${textColor};"
       >
-        Si vous n'avez pas tenté de vous connecter, ignorer cette email.
+        Si vous n'avez pas tenté de vous connecter, ignorez cette email.
       </td>
-    </tr>
-  </table>
-</body>
-`
+    </tr>`
+    return template(body)
   }
 
   // Email Text body (fallback for email clients that don't render HTML, e.g. feature phones)
@@ -85,7 +74,7 @@ module.exports = function sendVerifyMail(ctx) {
 
   transport.sendMail({
     to: email,
-    from: `"Njörd 🛼" <${process.env.EMAIL_SERVER_USER}>`,
+    from,
     subject: `Connexion à Njörd`,
     text: text({ url, host }),
     html: html({ url, host, email })
