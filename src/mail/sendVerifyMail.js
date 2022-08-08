@@ -5,7 +5,7 @@ const { textColor, buttonBackgroundColor, buttonTextColor, buttonBorderColor } =
 
 module.exports = function sendVerifyMail(ctx) {
   if (ctx.headers.authorization !== process.env.BIFROST_TOKEN) {
-    return ctx.status(403).message('Non autorisé');
+    return ctx.throw(403,'Non autorisé');
   }
   const { url, host, email } = ctx.request.body;
   //no wait confirm for vercel limit timeout
@@ -25,7 +25,7 @@ module.exports = function sendVerifyMail(ctx) {
     </tr>
     <tr>
       <td align="center" style="padding: 20px 0;">
-        <table border="0" cellspacing="0" cellpadding="0">
+        <table border="0" cellspacing="0" cellpadding="0" max-width: 600px;>
           <tr>
             <td 
               align="center"
@@ -46,6 +46,33 @@ module.exports = function sendVerifyMail(ctx) {
                   display: inline-block; font-weight: bold;">
                 Se connecter
               </a>
+            </td>
+          </tr>
+          <tr>
+            <td 
+              align="center"
+              style="
+                padding: 10x 0px 10px 0px;
+                font-size: 16px;
+                line-height: 22px;
+                font-family: Helvetica, Arial, sans-serif;
+                color: ${textColor};"
+            >
+            Vous pouvez copier ce lien dans votre navigateur :
+            </td>
+          </tr>
+          <tr>
+            <td 
+              align="center"
+              style="
+                padding: 0px 0px 10px 0px;
+                font-size: 16px;
+                line-height: 22px;
+                word-break:break-all;
+                font-family: Helvetica, Arial, sans-serif;
+                color: ${textColor};"
+            >
+              ${url}
             </td>
           </tr>
         </table>
@@ -80,5 +107,5 @@ module.exports = function sendVerifyMail(ctx) {
     html: html({ url, host, email })
   })
 
-  ctx.body = "Send !";
+  ctx.body = "Envoyé !";
 }
