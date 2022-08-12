@@ -10,13 +10,13 @@ module.exports = function sendLeagueRequestMail(ctx) {
   if (ctx.headers.authorization !== process.env.BIFROST_TOKEN) {
     return ctx.throw(403, 'Non autorisé');
   }
-  const { acceptUrl, refusedUrl, url, emails, text,subject } = ctx.request.body;
+  const { acceptUrl, refusedUrl, url, requests } = ctx.request.body;
 
-  if (!acceptUrl || !refusedUrl || !url || !emails || !text || !subject ) {
+  if (!acceptUrl || !refusedUrl || !url || !requests) {
     return ctx.throw(400,'Il manque des infos');
   }
 
-  function html({ url, acceptUrl, refusedUrl,text }) {
+  function html({ token,resume }) {
     const
       body = `<tr>
       <td 
@@ -25,7 +25,7 @@ module.exports = function sendLeagueRequestMail(ctx) {
         font-size: 18px; 
         font-family: Helvetica, Arial, sans-serif; 
         color: ${textColor};">
-        <strong>${text}</strong>
+        <strong>${resume}</strong>
       </td>
     </tr>
     <tr>
@@ -39,7 +39,7 @@ module.exports = function sendLeagueRequestMail(ctx) {
               bgcolor="${buttonRefusedColor}">
               <p>
                 <a 
-                  href="${refusedUrl}" 
+                  href="${refusedUrl}${token}" 
                   target="_self"
                   ref="opener"
                   style="
@@ -61,7 +61,7 @@ module.exports = function sendLeagueRequestMail(ctx) {
               bgcolor="${buttonBackgroundColor}">
               <p>
                 <a 
-                  href="${acceptUrl}" 
+                  href="${acceptUrl}${token}" 
                   target="_self"
                   ref="opener"
                   style="
@@ -83,7 +83,7 @@ module.exports = function sendLeagueRequestMail(ctx) {
             bgcolor="${buttonSeeColor}">
             <p>
               <a 
-                href="${url}" 
+                href="${url}${token}" 
                 target="_self"
                 ref="opener"
                 style="
@@ -126,7 +126,7 @@ module.exports = function sendLeagueRequestMail(ctx) {
                 font-family: Helvetica, Arial, sans-serif;
                 color: ${textColor};"
             >
-              ${url}
+              ${url}${token}
             </td>
           </tr>
         </table>
@@ -153,13 +153,13 @@ module.exports = function sendLeagueRequestMail(ctx) {
     return `Connectez vous à Njörd\n${url}\n\n`
   }
 
-  emails.forEach(email => {
+  requests.forEach(({token,value,resume}) => {
     transport.sendMail({
-      to: email,
+      to: value.email,
       from,
-      subject,
-      text: textFormat(url),
-      html: html({ url, acceptUrl, refusedUrl, email,text })
+      subject: resume,
+      text: textFormat(url + token),
+      html: html({token,resume })
     })
   })
 
