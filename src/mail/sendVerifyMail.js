@@ -88,7 +88,7 @@ module.exports = function sendVerifyMail(ctx) {
           font-family: Helvetica, Arial, sans-serif;
           color: ${textColor};"
       >
-        Si vous n'avez pas tenté de vous connecter, ignorez cette email.
+        Si vous n'avez pas tenté de vous connecter, ignorez cet email.
       </td>
     </tr>`
     return template(body)
