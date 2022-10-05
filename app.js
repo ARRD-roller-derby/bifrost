@@ -10,9 +10,15 @@ const
   httpServer = http.createServer(app.callback()),
   ioSettings =  {
     cors: {
-      origin: process.env.CORS_DOMAIN,
+      origin: '*',
       methods: ["GET", "POST"],
     },
+    allowRequest: (req, callback) => {
+      const whitelist = process.env.CORS_DOMAINS.split(',')
+      if(!req.headers.origin) return callback(null,false)
+      const noOriginHeader = whitelist.find(domain=> req.headers.origin.includes(domain));
+      callback(null,noOriginHeader);
+    }
   }
   io = require("socket.io")(httpServer,ioSettings);
   
